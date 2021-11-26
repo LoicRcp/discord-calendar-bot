@@ -167,7 +167,48 @@ async def on_message(message):
 
                 await message.channel.send(embed=helpmess)
                 return
-            # if "all" in message.content:
+            if "all" in message.content:
+                nb = None
+                parts = message.content.split(" ")
+                for part in parts:
+                    if part.isnumeric():
+                        nb = int(part)
+
+                if nb == None:
+                    nb = 1000
+                events = listEvent(nb)
+                messageToSend = discord.Embed(title="Listes des évènements", color=0xFF5733)
+
+                messageToSend.set_author(name='Lxrry#3744', icon_url="https://cdn.discordapp.com/attachments/913878490728783873/913881031675891752/er48r4.jpg")
+                for event in events:
+                    id = event['id']
+                    start = parser.parse(event['start'].get('dateTime', event['start'].get('date')))
+                    end = parser.parse(event['end'].get('dateTime', event['end'].get('date')))
+
+
+                    titre = event['summary']
+                    description = event['description']
+
+                    messageToSend.add_field(name=titre, value=f"- Description: {description}\n"
+                                                              f"- Début: {start.date()} - {start.time()}\n"
+                                                              f"- Fin: {end.date()} - {end.time()}\n"
+                                                              f"- ID: {id}",
+                                            inline=False
+                                            )
+
+                    # messageToSend += f"id: {id}\n" \
+                    #                 f"Titre: {titre}\n"\
+                    #                 f"Description: {description}\n"\
+                    #                 f"start: {start}\n"\
+                    #                 f"end: {end}\n\n"
+
+                await message.channel.send(embed=messageToSend)
+                return
+
+            # if "add" in message.content:
+            #     temp = message.content
+
+
 
 
 botReady = False
