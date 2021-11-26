@@ -52,3 +52,26 @@ def addEvent(day, month, year, subject, description, start=12, duree=1):
     print("starts at: ", event_result['start']['dateTime'])
     print("ends at: ", event_result['end']['dateTime'])
     service.close()
+
+
+def listEvent():
+    service = login()
+
+    now = datetime.now().isoformat() + 'z'  # 'Z' indicates UTC time
+    print('Getting the upcoming 10 events')
+    events_result = service.events().list(calendarId='39tnka5h3lgg91k7ukncsmbn14@group.calendar.google.com', timeMin=now,
+                                          maxResults=10, singleEvents=True,
+                                          orderBy='startTime').execute()
+    events = events_result.get('items', [])
+
+    if not events:
+        print('No upcoming events found.')
+    for event in events:
+        start = parser.parse(event['start'].get('dateTime', event['start'].get('date')))
+        id = event['id']
+        print(f"id: {id}\n"
+              f"start: {start}\n"
+              f"Titre: {event['summary']}\n\n")
+
+
+    service.close()
