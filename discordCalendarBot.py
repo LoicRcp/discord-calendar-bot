@@ -6,6 +6,11 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from dateutil import parser
+import discord
+from dotenv import load_dotenv
+import os
+
+load_dotenv(r'./.env')
 
 SCOPES = ['https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/calendar.events.owned', 'https://www.googleapis.com/auth/calendar.events.owned.readonly' ]
 
@@ -103,3 +108,28 @@ def showEvent(id):
 
 
     service.close()
+
+
+
+
+
+client = discord.Client()
+
+botToken = os.getenv('botToken')
+
+
+@client.event
+async def on_ready():
+
+    botReady = True
+    print("Bot ready !")
+
+
+@client.event
+async def on_message(message):
+    if botReady:
+        if message.content.startswith("!cal"):
+            print("Working")
+
+botReady = False
+client.run(botToken)
