@@ -75,3 +75,31 @@ def listEvent():
 
 
     service.close()
+
+
+def deleteEvent(id):
+    service = login()
+
+    try:
+        service.events().delete(calendarId='39tnka5h3lgg91k7ukncsmbn14@group.calendar.google.com', eventId=id).execute()
+    except:
+        print("L'évènement n'existe pas...")
+    service.close()
+def showEvent(id):
+    service = login()
+
+    event = service.events().get(calendarId='39tnka5h3lgg91k7ukncsmbn14@group.calendar.google.com', eventId=id).execute()
+
+    start = parser.parse(event['start'].get('dateTime', event['start'].get('date')))
+    end = parser.parse(event['end'].get('dateTime', event['end'].get('date')))
+    titre = event['summary']
+    description = event['description']
+
+    print(f"id: {id}\n"
+          f"Titre: {titre}\n"
+          f"Description: {description}\n"
+          f"start: {start}\n"
+          f"end: {end}")
+
+
+    service.close()
