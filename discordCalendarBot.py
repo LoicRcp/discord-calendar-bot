@@ -59,27 +59,33 @@ def addEvent(day, month, year, subject, description, start=12, duree=1):
     service.close()
 
 
-def listEvent():
+def listEvent(nb):
     service = login()
 
     now = datetime.now().isoformat() + 'z'  # 'Z' indicates UTC time
     print('Getting the upcoming 10 events')
     events_result = service.events().list(calendarId='39tnka5h3lgg91k7ukncsmbn14@group.calendar.google.com', timeMin=now,
-                                          maxResults=10, singleEvents=True,
+                                          maxResults=nb, singleEvents=True,
                                           orderBy='startTime').execute()
     events = events_result.get('items', [])
-
+    service.close()
     if not events:
         print('No upcoming events found.')
-    for event in events:
-        start = parser.parse(event['start'].get('dateTime', event['start'].get('date')))
-        id = event['id']
-        print(f"id: {id}\n"
-              f"start: {start}\n"
-              f"Titre: {event['summary']}\n\n")
+    else:
+        return events
+
+    # for event in events:
+    #     start = parser.parse(event['start'].get('dateTime', event['start'].get('date')))
+    #     id = event['id']
+    #
+    #
+    #
+    #     print(f"id: {id}\n"
+    #           f"start: {start}\n"
+    #           f"Titre: {event['summary']}\n\n")
 
 
-    service.close()
+
 
 
 def deleteEvent(id):
@@ -100,14 +106,17 @@ def showEvent(id):
     titre = event['summary']
     description = event['description']
 
-    print(f"id: {id}\n"
-          f"Titre: {titre}\n"
-          f"Description: {description}\n"
-          f"start: {start}\n"
-          f"end: {end}")
-
-
     service.close()
+    return event
+
+    # print(f"id: {id}\n"
+    #       f"Titre: {titre}\n"
+    #       f"Description: {description}\n"
+    #       f"start: {start}\n"
+    #       f"end: {end}")
+
+
+    # service.close()
 
 
 
@@ -120,7 +129,7 @@ botToken = os.getenv('botToken')
 
 @client.event
 async def on_ready():
-
+    global botReady
     botReady = True
     print("Bot ready !")
 
@@ -129,7 +138,37 @@ async def on_ready():
 async def on_message(message):
     if botReady:
         if message.content.startswith("!cal"):
-            print("Working")
+            print(message.content)
+            if "help" in message.content:
+
+                helpmess = discord.Embed(title="Aide CalendarBot",
+                                         description= "Ce bot permet de consulter, ajouter ou supprimer facilement les différents évènements d'un calendrier.",
+                                         color=0xFF5733)
+                helpmess.set_author(name='Lxrry#3744', icon_url="https://cdn.discordapp.com/attachments/913878490728783873/913881031675891752/er48r4.jpg")
+
+                helpmess.add_field(name="Le préfixe", value="`!cal` est le préfixe devant chaque commande du bot", inline=False)
+                helpmess.add_field(name="Afficher l'aide", value="Affiche ce message d'aide\n - !cal help", inline=False)
+                helpmess.add_field(name="Ajouter un évènement", value="Ajoute un évènement\n- !cal add\n\n ARGUMENTS:\n"
+                                                                      "date: jj-mm-aaaa\n"
+                                                                      "titre: Le titre de l'évènement\n"
+                                                                      "desc: La description de l'évènement\n\n"
+                                                                      "OPTIONNEL\n"
+                                                                      "start: 14h\n"
+                                                                      "duree: 2h", inline=False)
+                helpmess.add_field(name="Voir les evènements", value="Affiche la liste des X prochains évènements (X est un nombre)\n"
+                                                                     " - !cal all X", inline=False)
+                helpmess.add_field(name="Voir UN evènement en détail", value="Affiche les détails de l'évènement ayant l'id X\nAfficher la liste de tout les events pour avoir les ID"
+                                                                     " - !cal show ID", inline=False)
+
+                helpmess.add_field(name="Supprimer un évènement",
+                                   value="Supprime l'évènement ayant l'id X\nAfficher la liste de tout les events pour avoir les ID"
+                                         " - !cal del ID", inline=False)
+
+
+                await message.channel.send(embed=helpmess)
+                return
+            # if "all" in message.content:
+
 
 botReady = False
 client.run(botToken)
