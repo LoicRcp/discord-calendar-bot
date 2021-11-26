@@ -29,3 +29,26 @@ def login():
     service = build('calendar', 'v3', credentials=creds)
 
     return service
+
+def addEvent(day, month, year, subject, description, start=12, duree=1):
+    service = login()
+
+    date = datetime(year, month, day, start)
+    start = date.isoformat()
+    end = (date + timedelta(hours=duree)).isoformat()
+
+    event_result = service.events().insert(calendarId='39tnka5h3lgg91k7ukncsmbn14@group.calendar.google.com',
+                                           body={
+                                               "summary": subject,
+                                               "description": description,
+                                               "start": {"dateTime": start, "timeZone": 'Europe/Paris'},
+                                               "end": {"dateTime": end, "timeZone": 'Europe/Paris'},
+                                           }
+                                           ).execute()
+
+    print("created event")
+    print("id: ", event_result['id'])
+    print("summary: ", event_result['summary'])
+    print("starts at: ", event_result['start']['dateTime'])
+    print("ends at: ", event_result['end']['dateTime'])
+    service.close()
