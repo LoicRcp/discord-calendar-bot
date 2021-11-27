@@ -51,12 +51,27 @@ def addEvent(day, month, year, subject, description, start=12, duree=1):
                                            }
                                            ).execute()
 
-    print("created event")
-    print("id: ", event_result['id'])
-    print("summary: ", event_result['summary'])
-    print("starts at: ", event_result['start']['dateTime'])
-    print("ends at: ", event_result['end']['dateTime'])
+    result = f"created event\n" \
+             f"id: {event_result['id']}\n" \
+             f"description: {event_result['summary']}\n" \
+             f"starts at: {event_result['start']['dateTime']}\n" \
+             f"ends at: {event_result['end']['dateTime']}"
+
+
+    result = discord.Embed(title=event_result['summary'], description="Ajout réussi")
+    result.set_author(name='Lxrry#3744',
+                        icon_url="https://cdn.discordapp.com/attachments/913878490728783873/913881031675891752/er48r4.jpg")
+    result.add_field(name="Description", value=event_result['description'],inline=False)
+    result.add_field(name="ID", value=event_result['id'], inline=False)
+
+    # print("created event")
+    # print("id: ", event_result['id'])
+    # print("summary: ", event_result['summary'])
+    # print("starts at: ", event_result['start']['dateTime'])
+    # print("ends at: ", event_result['end']['dateTime'])
     service.close()
+
+    return result
 
 
 def listEvent(nb):
@@ -105,6 +120,7 @@ def showEvent(id):
     end = parser.parse(event['end'].get('dateTime', event['end'].get('date')))
     titre = event['summary']
     description = event['description']
+
 
     service.close()
     return event
@@ -205,8 +221,78 @@ async def on_message(message):
                 await message.channel.send(embed=messageToSend)
                 return
 
-            # if "add" in message.content:
-            #     temp = message.content
+            if "add" in message.content:
+                temp = message.content
+                temp = temp.split('\n')
+
+                day = None
+                month = None
+                year = None
+                titre = None
+                desc = None
+                start = None
+                duree = None
+
+                for part in temp:
+                    if "date" in part:
+
+                        date = str.strip(part.split(':')[1]).split("-")
+                        day = int(date[0])
+                        month = int(date[1])
+                        year = int(date[2])
+                    if "titre" in part:
+
+                        titre = str.strip(part.split(":")[1])
+                    if "desc" in part:
+                        desc = str.strip(part.split(":")[1])
+                    if "start" in part:
+                        start = int(str.strip(part.split(":")[1]).split("h")[0])
+                    if "duree" in part:
+                        duree = int(str.strip(part.split(":")[1]).split("h")[0])
+
+                if day != None and month != None and year != None and titre != None and desc != None:
+                    if start != None and duree != None:
+                        result = addEvent(day=day, month=month, year=year, subject=titre, description=desc, start=start, duree=duree)
+                    else:
+                        result = addEvent(day=day, month=month, year=year, subject=titre, description=desc)
+                    await message.channel.send(embed=result)
+                else:
+                    await message.channel.send("La commande est incomplète...")
+
+            if "del" in message.content:
+                temp = message.content.split(" ")
+                id = temp[-1]
+                deleteEvent(id)
+                await message.channel.send(f"Le message ayant pour ID: {id} à été supprimé.")
+            if "show" in message.content:
+                temp = message.content.split(" ")
+                id = temp[-1]
+                event = showEvent(id)
+
+                messageToSend = discord.Embed(title="Listes des évènements", color=0xFF5733)
+
+                messageToSend.set_author(name='Lxrry#3744',
+                                         icon_url="https://cdn.discordapp.com/attachments/913878490728783873/913881031675891752/er48r4.jpg")
+
+                id = event['id']
+                start = parser.parse(event['start'].get('dateTime', event['start'].get('date')))
+                end = parser.parse(event['end'].get('dateTime', event['end'].get('date')))
+
+                titre = event['summary']
+                description = event['description']
+
+                messageToSend.add_field(name=titre, value=f"- Description: {description}\n"
+                                                          f"- Début: {start.date()} - {start.time()}\n"
+                                                          f"- Fin: {end.date()} - {end.time()}\n"
+                                                          f"- ID: {id}",
+                                        inline=False
+                                        )
+
+
+                await message.channel.send(embed=messageToSend)
+
+
+
 
 
 
